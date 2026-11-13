@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="siteTitle">Wizarding World</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: { extend: {
+                fontFamily: { 'cinzel': ['Cinzel', 'serif'], 'inter': ['Inter', 'sans-serif'] },
+                colors: {
+                    gryffindor: { primary: '#740001', secondary: '#D4AF37' },
+                    slytherin: { primary: '#1A472A', secondary: '#5D5D5D' },
+                    ravenclaw: { primary: '#0E1A40', secondary: '#946B2D' },
+                    hufflepuff: { primary: '#FFDB00', secondary: '#000000' },
+                }
+            }}
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./css/mystical.css">
+</head>
+<body class="min-h-screen">
+    <canvas id="starfield"></canvas>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-void/90 backdrop-blur-md flex items-center justify-center z-[60]">
+        <div class="text-center">
+            <div class="w-20 h-20 bg-gradient-to-br from-gold-bright to-gold-deep rounded-full animate-spin mx-auto mb-4" style="box-shadow: 0 0 40px rgba(212,175,55,0.6)"></div>
+            <p class="font-cinzel text-xl text-ink" data-i18n="loading">Loading...</p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="glass-header sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <svg class="wand gold-sparkle" width="32" height="32" viewBox="0 0 32 32">
+                        <defs><linearGradient id="wandWood" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6b4a2b"/><stop offset="100%" stop-color="#3d2a14"/></linearGradient><radialGradient id="wandGlow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fff3b0"/><stop offset="40%" stop-color="#F3D98B"/><stop offset="100%" stop-color="#D4AF37" stop-opacity="0"/></radialGradient></defs>
+                        <rect x="14" y="4" width="4" height="24" rx="2" fill="url(#wandWood)"/><circle cx="16" cy="3" r="5" fill="url(#wandGlow)"/><circle cx="16" cy="3" r="2" fill="#fff"/>
+                    </svg>
+                    <h1 class="font-cinzel text-2xl font-bold gold-sparkle" data-i18n="siteTitle">Wizarding World</h1>
+                </div>
+
+                <div class="relative">
+                    <button id="langBtn" class="glass btn-glass flex items-center gap-2 px-3 py-2 rounded-lg">
+                        <span id="currentLangFlag">🇬🇧</span>
+                        <span id="currentLangName" class="font-medium text-ink">English</span>
+                    </button>
+                    <div id="langDropdown" class="glass-deep absolute right-0 mt-2 w-40 rounded-lg opacity-0 invisible transform translate-y-2 transition-all duration-200 z-50 p-2">
+                        <button data-lang="en" class="lang-option w-full px-4 py-2 text-left hover:bg-white/10 rounded flex items-center gap-2 text-ink">🇬🇧 English</button>
+                        <button data-lang="es" class="lang-option w-full px-4 py-2 text-left hover:bg-white/10 rounded flex items-center gap-2 text-ink">🇪🇸 Español</button>
+                        <button data-lang="fr" class="lang-option w-full px-4 py-2 text-left hover:bg-white/10 rounded flex items-center gap-2 text-ink">🇫🇷 Français</button>
+                        <button data-lang="it" class="lang-option w-full px-4 py-2 text-left hover:bg-white/10 rounded flex items-center gap-2 text-ink">🇮🇹 Italiano</button>
+                        <button data-lang="pt" class="lang-option w-full px-4 py-2 text-left hover:bg-white/10 rounded flex items-center gap-2 text-ink">🇵🇹 Português</button>
+                        <button data-lang="uk" class="lang-option w-full px-4 py-2 text-left hover:bg-white/10 rounded flex items-center gap-2 text-ink">🇺🇦 Українська</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <nav class="glass-nav" role="tablist">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex flex-wrap gap-2 py-3" id="navTabs">
+                    <button data-tab="characters" class="tab-btn" role="tab" aria-selected="true" data-i18n="tabCharacters">Characters</button>
+                    <button data-tab="spells" class="tab-btn" role="tab" aria-selected="false" data-i18n="tabSpells">Spells</button>
+                    <button data-tab="houses" class="tab-btn" role="tab" aria-selected="false" data-i18n="tabHouses">Houses</button>
+                    <button data-tab="books" class="tab-btn" role="tab" aria-selected="false" data-i18n="tabBooks">Books</button>
+                    <button data-tab="favorites" class="tab-btn" role="tab" aria-selected="false" data-i18n="tabFavorites">Favorites</button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="search-glass mb-8 p-4 flex flex-col sm:flex-row gap-4" id="filterBar">
+            <div class="flex-1 relative">
+                <input type="text" id="searchInput" placeholder="Search..." class="w-full pl-10 pr-4 py-3 bg-transparent border border-gold/30 rounded-lg text-ink focus:outline-none focus:border-gold-bright" data-i18n-placeholder="searchPlaceholder">
+            </div>
+            <select id="sortSelect" class="bg-transparent border border-gold/30 rounded-lg px-4 py-3 text-ink">
+                <option value="name-asc" data-i18n="sortNameAsc">Name A-Z</option>
+                <option value="name-desc" data-i18n="sortNameDesc">Name Z-A</option>
+                <option value="index-asc" data-i18n="sortIndexAsc">Index Asc</option>
+                <option value="index-desc" data-i18n="sortIndexDesc">Index Desc</option>
+            </select>
+            <button id="filterBtn" class="btn-gold gold-sparkle" data-i18n="filterBtn">Filters</button>
+        </div>
+
+        <div id="activeFilters" class="mt-4 flex flex-wrap gap-2 mb-8"></div>
+
+        <section id="contentArea" aria-live="polite"></section>
+        <div id="pagination" class="mt-12 flex items-center justify-center gap-2"></div>
+    </main>
+
+    <!-- Modals -->
+    <div id="filterModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
+        <div class="modal-backdrop absolute inset-0 bg-void/80 backdrop-blur-sm"></div>
+        <div class="glass-deep modal-panel w-full max-w-md p-6 rounded-2xl relative">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="font-cinzel text-2xl text-gold" data-i18n="filterModalTitle">Filters</h2>
+                <button id="closeFilterModal" class="text-gold-bright hover:text-gold text-xl">✕</button>
+            </div>
+            <div class="space-y-6" id="filterModalContent"></div>
+            <div class="mt-8 flex gap-3 justify-end">
+                <button id="clearFilters" class="btn-glass" data-i18n="clearFilters">Clear All</button>
+                <button id="applyFilters" class="btn-gold" data-i18n="applyFilters">Apply</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ... other modals similar ... -->
+    <div id="favoritesModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
+        <div class="modal-backdrop absolute inset-0 bg-void/80 backdrop-blur-sm"></div>
+        <div class="glass-deep modal-panel w-full max-w-md p-6 rounded-2xl relative">
+             <div class="flex justify-between items-center mb-6">
+                 <h2 class="font-cinzel text-2xl text-gold" data-i18n="favoritesModalTitle">Save Favorites</h2>
+                 <button id="closeFavoritesModal" class="text-gold-bright hover:text-gold text-xl">✕</button>
+             </div>
+             <div id="favoritesModalContent" class="space-y-4">
+                <input type="text" id="favoritesNameInput" class="w-full px-4 py-3 bg-void/50 border border-gold/30 rounded-lg text-ink" data-i18n-placeholder="favoritesNamePlaceholder">
+                <div class="grid grid-cols-2 gap-3" id="favoritesCategorySelect"></div>
+                <div class="flex gap-3 justify-end mt-6">
+                    <button id="cancelFavorites" class="btn-glass" data-i18n="cancel">Cancel</button>
+                    <button id="saveFavorites" class="btn-gold" data-i18n="save">Save</button>
+                </div>
+             </div>
+        </div>
+    </div>
+
+    <div id="viewFavoritesModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
+        <div class="modal-backdrop absolute inset-0 bg-void/80 backdrop-blur-sm"></div>
+        <div class="glass-deep modal-panel w-full max-w-2xl max-h-[90vh] p-6 rounded-2xl relative overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="font-cinzel text-2xl text-gold" data-i18n="viewFavoritesTitle">Your Favorites</h2>
+                <button id="closeViewFavoritesModal" class="text-gold-bright hover:text-gold text-xl">✕</button>
+            </div>
+            <div id="viewFavoritesContent"></div>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="fixed bottom-6 right-6 z-[70] flex flex-col gap-2"></div>
+
+    <script type="module" src="./js/main.js"></script>
+</body>
+</html>
